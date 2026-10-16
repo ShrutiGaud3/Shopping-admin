@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://shopping-backend-te3w.onrender.com/api';
+const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const isBrowser = typeof window !== 'undefined';
+  const isRemote = isBrowser && 
+    window.location.hostname !== 'localhost' && 
+    window.location.hostname !== '127.0.0.1';
+
+  // If running on a live deployed domain (such as Vercel) and envUrl points to localhost or is missing,
+  // automatically route to the cloud Render backend to prevent loopback CORS blocks.
+  if (isRemote && (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+    return 'https://shopping-backend-te3w.onrender.com/api';
+  }
+
+  return envUrl || 'https://shopping-backend-te3w.onrender.com/api';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 const API = axios.create({
   baseURL: API_BASE_URL,
