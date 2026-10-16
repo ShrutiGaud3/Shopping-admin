@@ -24,8 +24,22 @@ import {
   Settings as SettingsIcon,
   Image as ImageIcon,
   LayoutGrid,
-  Award
+  Award,
+  Globe,
+  BookOpen,
+  Mail
 } from 'lucide-react';
+
+interface NavItem {
+  name: string;
+  path: string;
+  icon: React.ElementType;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
 export const AdminLayout: React.FC = () => {
   const { user, logout, toast } = useAuth();
@@ -37,23 +51,57 @@ export const AdminLayout: React.FC = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Hero Banners', path: '/banners', icon: ImageIcon },
-    { name: 'Home Sections', path: '/home-sections', icon: LayoutGrid },
-    { name: 'Categories', path: '/categories', icon: FolderTree },
-    { name: 'Products', path: '/products', icon: Package },
-    { name: 'Orders', path: '/orders', icon: ShoppingBag },
-    { name: 'Inventory', path: '/inventory', icon: Layers },
-    { name: 'Marquee Strip', path: '/marquee', icon: Megaphone },
-    { name: 'Trust Badges', path: '/trust-badges', icon: Award },
-    { name: 'Pages & FAQs', path: '/pages-manager', icon: FileText },
-    { name: 'Coupons', path: '/coupons', icon: Tag },
-    { name: 'Customers', path: '/users', icon: Users },
-    { name: 'Messages', path: '/messages', icon: MessageSquare },
-    { name: 'Reviews', path: '/reviews', icon: Star },
-    { name: 'Site Settings', path: '/settings', icon: SettingsIcon },
+  const navSections: NavSection[] = [
+    {
+      title: 'Overview',
+      items: [
+        { name: 'Dashboard', path: '/', icon: LayoutDashboard }
+      ]
+    },
+    {
+      title: 'Catalog & Stock',
+      items: [
+        { name: 'Categories', path: '/categories', icon: FolderTree },
+        { name: 'Products', path: '/products', icon: Package },
+        { name: 'Inventory Stock', path: '/inventory', icon: Layers }
+      ]
+    },
+    {
+      title: 'Sales & Delivery',
+      items: [
+        { name: 'Orders & Tracking', path: '/orders', icon: ShoppingBag },
+        { name: 'Shipping Zones', path: '/shipping-zones', icon: Globe },
+        { name: 'Discount Coupons', path: '/coupons', icon: Tag }
+      ]
+    },
+    {
+      title: 'Engagement & CRM',
+      items: [
+        { name: 'Customer Accounts', path: '/users', icon: Users },
+        { name: 'Product Reviews', path: '/reviews', icon: Star },
+        { name: 'Newsletter Subscribers', path: '/subscribers', icon: Mail },
+        { name: 'Blog Stories', path: '/blogs', icon: BookOpen },
+        { name: 'Contact Messages', path: '/messages', icon: MessageSquare }
+      ]
+    },
+    {
+      title: 'Storefront & Brand',
+      items: [
+        { name: 'Hero Banners', path: '/banners', icon: ImageIcon },
+        { name: 'Home Sections', path: '/home-sections', icon: LayoutGrid },
+        { name: 'Marquee Strip', path: '/marquee', icon: Megaphone },
+        { name: 'Trust Badges', path: '/trust-badges', icon: Award },
+        { name: 'Pages & FAQs', path: '/pages-manager', icon: FileText }
+      ]
+    },
+    {
+      title: 'System & Config',
+      items: [
+        { name: 'Site Settings', path: '/settings', icon: SettingsIcon }
+      ]
+    }
   ];
+
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
@@ -72,12 +120,14 @@ export const AdminLayout: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Weavera Logo"
+              className="w-9 h-9 rounded-xl object-contain shadow-xs border border-slate-200"
+            />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-wider text-slate-900 text-lg font-serif">VELORA</span>
+                <span className="font-extrabold tracking-wider text-slate-900 text-lg font-serif">WEAVERA</span>
                 <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Portal
                 </span>
@@ -111,8 +161,13 @@ export const AdminLayout: React.FC = () => {
           {/* Profile & Logout */}
           <div className="flex items-center gap-3 pl-2 sm:border-l sm:border-slate-200">
             <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-bold text-slate-800">{user?.name || 'Administrator'}</span>
-              <span className="text-[10px] text-emerald-700 font-medium">{user?.email || 'admin@velora.com'}</span>
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="text-xs font-bold text-slate-800">{user?.name || 'Administrator'}</span>
+                <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {user?.role || 'admin'}
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-medium">{user?.email || 'admin@velora.com'}</span>
             </div>
 
             <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center font-bold text-xs text-emerald-800">
@@ -137,33 +192,37 @@ export const AdminLayout: React.FC = () => {
         
         {/* Desktop Sidebar */}
         <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between shrink-0 p-4 shadow-xs">
-          <div className="space-y-1">
-            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              Navigation
-            </div>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-emerald-600 text-white font-semibold shadow-md shadow-emerald-600/20'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </NavLink>
-              );
-            })}
+          <div className="space-y-4 overflow-y-auto pr-1">
+            {navSections.map((section) => (
+              <div key={section.title} className="space-y-1">
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {section.title}
+                </div>
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      end={item.path === '/'}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                          isActive
+                            ? 'bg-emerald-600 text-white font-semibold shadow-md shadow-emerald-600/20'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`
+                      }
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.name}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200 text-[11px] text-slate-500">
+          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-[11px] text-slate-500 mt-3 shrink-0">
             <div className="flex items-center justify-between text-slate-800 font-semibold mb-1">
               <span>Admin Engine</span>
               <span className="text-emerald-700 text-[10px] bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 font-bold">v2.0 Light</span>
@@ -180,40 +239,47 @@ export const AdminLayout: React.FC = () => {
               onClick={() => setSidebarOpen(false)}
             />
             <div className="relative w-64 bg-white border-r border-slate-200 p-4 flex flex-col justify-between z-10 shadow-2xl">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+              <div className="space-y-4 overflow-y-auto pr-1">
+                <div className="flex items-center justify-between pb-2 mb-1 border-b border-slate-100">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Navigation</span>
                   <button onClick={() => setSidebarOpen(false)} className="p-1 text-slate-400 hover:text-slate-800">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      end={item.path === '/'}
-                      onClick={() => setSidebarOpen(false)}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                          isActive
-                            ? 'bg-emerald-600 text-white font-semibold shadow-md shadow-emerald-600/20'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                        }`
-                      }
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.name}</span>
-                    </NavLink>
-                  );
-                })}
+                {navSections.map((section) => (
+                  <div key={section.title} className="space-y-1">
+                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      {section.title}
+                    </div>
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          end={item.path === '/'}
+                          onClick={() => setSidebarOpen(false)}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                              isActive
+                                ? 'bg-emerald-600 text-white font-semibold shadow-md shadow-emerald-600/20'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                            }`
+                          }
+                        >
+                          <Icon className="w-4 h-4 shrink-0" />
+                          <span>{item.name}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-100 mt-2 shrink-0">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-sm font-semibold transition border border-rose-200 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold transition border border-rose-200 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>

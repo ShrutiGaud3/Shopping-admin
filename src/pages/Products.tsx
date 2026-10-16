@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { useAuth } from '../context/AuthContext';
-import type { Product, Category } from '../types';
+import type { Product, Category, StitchOption } from '../types';
 import {
   Search,
   Plus,
@@ -13,7 +13,10 @@ import {
   Loader2,
   Image as ImageIcon,
   Check,
-  AlertCircle
+  AlertCircle,
+  Scissors,
+  Sparkles,
+  Video
 } from 'lucide-react';
 
 export const Products: React.FC = () => {
@@ -33,19 +36,35 @@ export const Products: React.FC = () => {
   // Form Data State
   const initialFormState = {
     name: '',
-    brand: 'VELORA Studio',
-    category: 'Dresses',
+    brand: 'Weavera',
+    category: 'Sarees',
     gender: 'Women' as 'Women' | 'Men' | 'Kids' | 'Unisex',
-    price: 1499,
-    originalPrice: 2499,
+    price: 1899,
+    originalPrice: 3499,
     stock: 25,
     image: '',
     images: [] as string[],
     description: '',
-    sizes: ['S', 'M', 'L'],
-    colors: [{ name: 'Black', hex: '#000000' }],
+    sizes: ['Free Size', 'Unstitched'],
+    colors: [{ name: 'Royal Red', hex: '#DC2626' }],
     isFeatured: false,
-    isTrending: false
+    isTrending: false,
+
+    // Phase 3 Ethnic fields
+    fabric: '',
+    work: '',
+    occasion: '',
+    washCare: 'Dry Clean Recommended',
+    setContents: '',
+    sareeLength: '',
+    lehengaFlare: '',
+    dispatchTime: 'Dispatched in 24-48 Hours',
+    videoUrl: '',
+    stitchOptions: [
+      { type: 'Unstitched', price: 0, description: 'Standard unstitched fabric set with margin' },
+      { type: 'Semi-Stitched + Fall & Pico', price: 299, description: 'Ready to drape with professional fall & pico' },
+      { type: 'Custom Tailored Blouse / Kurti', price: 699, description: 'Surat master tailor stitching as per custom measurements' }
+    ] as StitchOption[]
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -53,7 +72,12 @@ export const Products: React.FC = () => {
   const [colorName, setColorName] = useState('');
   const [colorHex, setColorHex] = useState('#000000');
 
-  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+  // Stitching inputs
+  const [stitchType, setStitchType] = useState('');
+  const [stitchPrice, setStitchPrice] = useState<number>(0);
+  const [stitchDesc, setStitchDesc] = useState('');
+
+  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size', 'Unstitched', 'Semi-Stitched'];
 
   const loadData = async () => {
     try {
@@ -80,6 +104,9 @@ export const Products: React.FC = () => {
     setActiveProductId(null);
     setFormData(initialFormState);
     setImageInput('');
+    setStitchType('');
+    setStitchPrice(0);
+    setStitchDesc('');
     setIsModalOpen(true);
   };
 
@@ -97,13 +124,60 @@ export const Products: React.FC = () => {
       image: prod.image,
       images: prod.images || [prod.image],
       description: prod.description,
-      sizes: prod.sizes || ['S', 'M', 'L'],
-      colors: prod.colors || [{ name: 'Black', hex: '#000000' }],
+      sizes: prod.sizes || ['Free Size'],
+      colors: prod.colors || [{ name: 'Default', hex: '#000000' }],
       isFeatured: Boolean(prod.isFeatured),
-      isTrending: Boolean(prod.isTrending)
+      isTrending: Boolean(prod.isTrending),
+
+      fabric: prod.fabric || '',
+      work: prod.work || '',
+      occasion: prod.occasion || '',
+      washCare: prod.washCare || 'Dry Clean Recommended',
+      setContents: prod.setContents || '',
+      sareeLength: prod.sareeLength || '',
+      lehengaFlare: prod.lehengaFlare || '',
+      dispatchTime: prod.dispatchTime || 'Dispatched in 24-48 Hours',
+      videoUrl: prod.videoUrl || '',
+      stitchOptions: prod.stitchOptions || []
     });
     setImageInput('');
+    setStitchType('');
+    setStitchPrice(0);
+    setStitchDesc('');
     setIsModalOpen(true);
+  };
+
+  const handleAddStitchOption = () => {
+    if (!stitchType.trim()) return;
+    setFormData((prev) => ({
+      ...prev,
+      stitchOptions: [
+        ...(prev.stitchOptions || []),
+        { type: stitchType.trim(), price: Number(stitchPrice) || 0, description: stitchDesc.trim() }
+      ]
+    }));
+    setStitchType('');
+    setStitchPrice(0);
+    setStitchDesc('');
+  };
+
+  const handleRemoveStitchOption = (idx: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      stitchOptions: (prev.stitchOptions || []).filter((_, i) => i !== idx)
+    }));
+  };
+
+  const handleApplySuratStitchPresets = () => {
+    setFormData((prev) => ({
+      ...prev,
+      stitchOptions: [
+        { type: 'Unstitched', price: 0, description: 'Standard unstitched fabric set with margin' },
+        { type: 'Semi-Stitched + Fall & Pico', price: 299, description: 'Ready to drape with professional fall & pico' },
+        { type: 'Custom Tailored Blouse / Kurti', price: 699, description: 'Surat master tailor stitching as per custom measurements' }
+      ]
+    }));
+    showToast('Applied Surat master tailor stitching presets!', 'success');
   };
 
   const handleToggleSize = (size: string) => {
@@ -238,11 +312,22 @@ export const Products: React.FC = () => {
             className="w-full md:w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:bg-white focus:border-emerald-500 transition"
           >
             <option value="">All Categories ({products.length})</option>
-            {categories.map((c) => (
-              <option key={c.id || c._id} value={c.name}>
-                {c.name}
-              </option>
-            ))}
+            {Array.from(new Set([
+              'Sarees',
+              'Lehengas',
+              'Salwar Suits',
+              ...categories.map((c) => c.name),
+              ...products.map((p) => p.category)
+            ]))
+              .filter((cat) => {
+                const lower = (cat || '').toLowerCase();
+                return ['saree', 'lehenga', 'suit', 'salwar', 'anarkali', 'sharara', 'silk'].some((k) => lower.includes(k));
+              })
+              .map((catName) => (
+                <option key={catName} value={catName}>
+                  {catName}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -296,8 +381,18 @@ export const Products: React.FC = () => {
                       </td>
                       <td className="py-3 px-4">
                         <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-700 border border-slate-200 font-medium">
-                          {p.category} ({p.gender})
+                          {p.category}
                         </span>
+                        {p.fabric && (
+                          <span className="block mt-1 text-[10px] text-amber-800 font-semibold truncate max-w-[130px]" title={p.fabric}>
+                            🧵 {p.fabric}
+                          </span>
+                        )}
+                        {p.stitchOptions && p.stitchOptions.length > 0 && (
+                          <span className="inline-block mt-0.5 text-[9px] text-slate-500 font-medium">
+                            ✂️ {p.stitchOptions.length} stitching {p.stitchOptions.length === 1 ? 'option' : 'options'}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900">₹{p.price.toLocaleString()}</div>
@@ -382,58 +477,76 @@ export const Products: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Signature Velvet Trench Coat"
+                  placeholder="e.g. Pure Kanjivaram Silk Saree or Bridal Heritage Velvet Lehenga"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
                 />
               </div>
 
-              {/* Grid Row: Brand, Category, Gender */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Grid Row: Brand & Category (Gender Section Removed) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Brand Name</label>
+                  <label className="block text-slate-700 font-bold mb-1">Brand / Collection *</label>
                   <input
                     type="text"
+                    list="brand-suggestions"
+                    required
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    placeholder="VELORA Studio"
+                    placeholder="e.g. Weavera or Weavera Bridal"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
                   />
+                  <datalist id="brand-suggestions">
+                    <option value="Weavera" />
+                    <option value="Weavera Heritage" />
+                    <option value="Weavera Bridal" />
+                    <option value="Weavera Silk" />
+                    <option value="Weavera Studio" />
+                  </datalist>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Category</label>
+                  <label className="block text-slate-700 font-bold mb-1">Category *</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
                   >
-                    {categories.length > 0 ? (
-                      categories.map((c) => (
-                        <option key={c.id || c._id} value={c.name}>{c.name}</option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="Dresses">Dresses</option>
-                        <option value="Jackets">Jackets</option>
-                        <option value="Tops">Tops</option>
-                        <option value="Trousers">Trousers</option>
-                        <option value="Footwear">Footwear</option>
-                      </>
+                    <optgroup label="Main Categories">
+                      <option value="Sarees">Sarees</option>
+                      <option value="Lehengas">Lehengas</option>
+                      <option value="Salwar Suits">Salwar Suits</option>
+                    </optgroup>
+                    {categories
+                      .filter((c) => {
+                        const n = c.name?.trim();
+                        return (
+                          n &&
+                          !['Sarees', 'Lehengas', 'Salwar Suits'].includes(n) &&
+                          ['saree', 'lehenga', 'suit', 'salwar', 'anarkali', 'sharara', 'silk'].some((k) =>
+                            n.toLowerCase().includes(k)
+                          )
+                        );
+                      })
+                      .length > 0 && (
+                      <optgroup label="Ethnic Subcategories">
+                        {categories
+                          .filter((c) => {
+                            const n = c.name?.trim();
+                            return (
+                              n &&
+                              !['Sarees', 'Lehengas', 'Salwar Suits'].includes(n) &&
+                              ['saree', 'lehenga', 'suit', 'salwar', 'anarkali', 'sharara', 'silk'].some((k) =>
+                                n.toLowerCase().includes(k)
+                              )
+                            );
+                          })
+                          .map((cat) => (
+                            <option key={cat.id || cat._id || cat.name} value={cat.name}>
+                              {cat.name}
+                            </option>
+                          ))}
+                      </optgroup>
                     )}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-bold mb-1">Gender Section</label>
-                  <select
-                    value={formData.gender}
-                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as any })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:bg-white focus:border-emerald-500 transition"
-                  >
-                    <option value="Women">Women</option>
-                    <option value="Men">Men</option>
-                    <option value="Kids">Kids</option>
-                    <option value="Unisex">Unisex</option>
                   </select>
                 </div>
               </div>
@@ -589,6 +702,206 @@ export const Products: React.FC = () => {
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Surat Ethnic Wear Specifications */}
+              <div className="bg-amber-50/50 border border-amber-200/80 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-700" />
+                    <span className="font-bold text-slate-900 text-xs">Surat Ethnic Wear Specifications</span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                    Suratikart Catalog Fields
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Fabric / Weave</label>
+                    <input
+                      type="text"
+                      value={formData.fabric}
+                      onChange={(e) => setFormData({ ...formData, fabric: e.target.value })}
+                      placeholder="e.g. Pure Kanjivaram Silk, Georgette"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Work / Embroidery</label>
+                    <input
+                      type="text"
+                      value={formData.work}
+                      onChange={(e) => setFormData({ ...formData, work: e.target.value })}
+                      placeholder="e.g. Zari Woven & Resham Work"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Occasion</label>
+                    <input
+                      type="text"
+                      value={formData.occasion}
+                      onChange={(e) => setFormData({ ...formData, occasion: e.target.value })}
+                      placeholder="e.g. Bridal & Wedding, Festive & Puja"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Set Contents</label>
+                    <input
+                      type="text"
+                      value={formData.setContents}
+                      onChange={(e) => setFormData({ ...formData, setContents: e.target.value })}
+                      placeholder="e.g. Saree with Unstitched Blouse Piece"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Saree Length (if saree)</label>
+                    <input
+                      type="text"
+                      value={formData.sareeLength}
+                      onChange={(e) => setFormData({ ...formData, sareeLength: e.target.value })}
+                      placeholder="e.g. 5.5 M Saree + 0.8 M Blouse"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Lehenga Flare (if lehenga)</label>
+                    <input
+                      type="text"
+                      value={formData.lehengaFlare}
+                      onChange={(e) => setFormData({ ...formData, lehengaFlare: e.target.value })}
+                      placeholder="e.g. 3.8 Meters Circular Flare"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Wash &amp; Care</label>
+                    <input
+                      type="text"
+                      value={formData.washCare}
+                      onChange={(e) => setFormData({ ...formData, washCare: e.target.value })}
+                      placeholder="e.g. Dry Clean Only"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Dispatch Time</label>
+                    <input
+                      type="text"
+                      value={formData.dispatchTime}
+                      onChange={(e) => setFormData({ ...formData, dispatchTime: e.target.value })}
+                      placeholder="e.g. Dispatched in 24-48 Hours"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1 flex items-center gap-1.5">
+                    <Video className="w-3.5 h-3.5 text-slate-500" /> Real Product Video URL (YouTube / MP4)
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-1.5 text-slate-900 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Stitching & Tailoring Customization Options */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <Scissors className="w-4 h-4 text-emerald-600" />
+                    <span className="font-bold text-slate-900 text-xs">Stitching &amp; Customization Options</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApplySuratStitchPresets}
+                    className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                  >
+                    Load Surat Presets
+                  </button>
+                </div>
+
+                {/* Existing Stitching Options List */}
+                {formData.stitchOptions && formData.stitchOptions.length > 0 && (
+                  <div className="space-y-2">
+                    {formData.stitchOptions.map((opt, i) => (
+                      <div
+                        key={i}
+                        className="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-3 shadow-2xs"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs">{opt.type}</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                              {opt.price === 0 ? 'Free' : `+₹${opt.price}`}
+                            </span>
+                          </div>
+                          {opt.description && (
+                            <p className="text-[11px] text-slate-500 mt-0.5">{opt.description}</p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveStitchOption(i)}
+                          className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                          title="Remove option"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Custom Stitch Option */}
+                <div className="pt-2 border-t border-slate-200">
+                  <span className="text-[11px] font-bold text-slate-700 block mb-1.5">Add Custom Stitching Option</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                    <input
+                      type="text"
+                      value={stitchType}
+                      onChange={(e) => setStitchType(e.target.value)}
+                      placeholder="Option (e.g. Heavy Latkan Blouse)"
+                      className="sm:col-span-5 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
+                    />
+                    <input
+                      type="number"
+                      value={stitchPrice}
+                      onChange={(e) => setStitchPrice(Number(e.target.value))}
+                      placeholder="Price ₹ (e.g. 499)"
+                      className="sm:col-span-3 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddStitchOption}
+                      className="sm:col-span-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-1.5 px-3 rounded-xl transition cursor-pointer"
+                    >
+                      + Add Option
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={stitchDesc}
+                    onChange={(e) => setStitchDesc(e.target.value)}
+                    placeholder="Brief description (e.g. Tailored as per standard size with padded cups)"
+                    className="w-full mt-2 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900"
+                  />
                 </div>
               </div>
 

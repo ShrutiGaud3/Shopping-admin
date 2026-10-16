@@ -11,12 +11,22 @@ export const couponService = {
         id: c._id || c.id,
         _id: c._id || c.id,
         code: c.code,
-        discountPercentage: c.discountPercentage,
-        maxDiscountAmount: c.maxDiscountAmount || 0,
-        minOrderAmount: c.minOrderAmount || 0,
-        expiryDate: c.expiryDate,
+        type: c.type || (c.discountType === 'fixed' ? 'flat' : 'percent'),
+        discountType: c.discountType || (c.type === 'flat' ? 'fixed' : 'percentage'),
+        value: c.value !== undefined ? c.value : (c.discountValue !== undefined ? c.discountValue : c.discountPercentage),
+        discountValue: c.discountValue !== undefined ? c.discountValue : c.value,
+        discountPercentage: c.discountPercentage || c.value || c.discountValue || 0,
+        maxDiscount: c.maxDiscount || c.maxDiscountAmount || c.maximumDiscount || 0,
+        maxDiscountAmount: c.maxDiscountAmount || c.maxDiscount || c.maximumDiscount || 0,
+        minOrder: c.minOrder || c.minOrderAmount || c.minimumOrderValue || 0,
+        minOrderAmount: c.minOrderAmount || c.minOrder || c.minimumOrderValue || 0,
+        expiry: c.expiry || c.expiryDate,
+        expiryDate: c.expiryDate || c.expiry,
+        usageLimit: c.usageLimit || 1000,
+        usedCount: c.usedCount || c.usageCount || 0,
+        usageCount: c.usedCount || c.usageCount || 0,
+        paymentMethod: c.paymentMethod || 'any',
         isActive: c.isActive !== undefined ? c.isActive : true,
-        usageCount: c.usageCount || 0,
         createdAt: c.createdAt
       }))
     };
@@ -25,6 +35,12 @@ export const couponService = {
   // Create coupon
   createCoupon: async (couponData: Partial<Coupon>): Promise<{ success: boolean; data: Coupon }> => {
     const response = await API.post('/admin/coupons', couponData);
+    return response.data;
+  },
+
+  // Update coupon
+  updateCoupon: async (id: string, couponData: Partial<Coupon>): Promise<{ success: boolean; data: Coupon }> => {
+    const response = await API.put(`/admin/coupons/${id}`, couponData);
     return response.data;
   },
 

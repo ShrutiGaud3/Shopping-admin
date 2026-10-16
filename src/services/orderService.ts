@@ -32,18 +32,38 @@ export const adaptOrder = (item: any): Order => {
       };
     }),
     totalAmount: Number(item.totalAmount || 0),
+    subtotal: Number(item.subtotal || item.totalAmount || 0),
     discountAmount: Number(item.discount || item.discountAmount || 0),
+    discount: Number(item.discount || item.discountAmount || 0),
     shippingFee: Number(item.shippingCharge || item.shippingFee || 0),
+    shippingCharge: Number(item.shippingCharge || item.shippingFee || 0),
+    codCharge: Number(item.codCharge || 0),
+    couponCode: item.couponCode || '',
     status: item.orderStatus || item.status || 'Confirmed',
+    orderStatus: item.orderStatus || item.status || 'Confirmed',
     paymentMethod: item.paymentMethod || 'COD',
+    paymentStatus: item.paymentStatus || 'pending',
+    paymentId: item.paymentId || '',
     shippingAddress: {
       fullName: item.shippingAddress?.fullName || item.customerName || 'Customer',
       street: item.shippingAddress?.street || item.shippingAddress?.address || 'Street address',
+      address: item.shippingAddress?.address || item.shippingAddress?.street || 'Street address',
       city: item.shippingAddress?.city || 'City',
       state: item.shippingAddress?.state || 'State',
       pincode: item.shippingAddress?.pincode || '',
-      phone: item.shippingAddress?.phone || item.customerPhone || ''
-    }
+      phone: item.shippingAddress?.phone || item.customerPhone || '',
+      country: item.shippingAddress?.country || 'India'
+    },
+    trackingNumber: item.trackingNumber || '',
+    carrierName: item.carrierName || '',
+    trackingUrl: item.trackingUrl || '',
+    deliveredAt: item.deliveredAt ? new Date(item.deliveredAt).toISOString() : undefined,
+    exchangeStatus: item.exchangeStatus || 'none',
+    exchangeReason: item.exchangeReason || '',
+    exchangeNotes: item.exchangeNotes || '',
+    exchangeRequestedAt: item.exchangeRequestedAt ? new Date(item.exchangeRequestedAt).toISOString() : undefined,
+    exchangeResolvedAt: item.exchangeResolvedAt ? new Date(item.exchangeResolvedAt).toISOString() : undefined,
+    exchangeAdminNotes: item.exchangeAdminNotes || ''
   };
 };
 
@@ -58,11 +78,29 @@ export const orderService = {
     };
   },
 
-  // Update order status (Pending, Confirmed, Packed, Shipped, Delivered, Cancelled)
-  updateOrderStatus: async (orderId: string, status: string): Promise<{ success: boolean; data: Order }> => {
-    const response = await API.put(`/admin/orders/${orderId}/status`, { status });
+  // Update order status, tracking, and carrier
+  updateOrderStatus: async (
+    orderId: string,
+    payload: { status?: string; trackingNumber?: string; carrierName?: string; trackingUrl?: string } | string
+  ): Promise<{ success: boolean; data: Order }> => {
+    const body = typeof payload === 'string' ? { status: payload } : payload;
+    const response = await API.put(`/admin/orders/${orderId}/status`, body);
     return {
       success: true,
+      data: adaptOrder(response.data.data)
+    };
+  },
+
+  // Approve or reject customer exchange request
+  updateExchangeStatus: async (
+    orderId: string,
+    exchangeStatus: 'approved' | 'rejected' | 'none',
+    adminNotes?: string
+  ): Promise<{ success: boolean; data: Order; message?: string }> => {
+    const response = await API.put(`/admin/orders/${orderId}/exchange`, { exchangeStatus, adminNotes });
+    return {
+      success: true,
+      message: response.data?.message,
       data: adaptOrder(response.data.data)
     };
   }

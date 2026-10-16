@@ -4,7 +4,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  role: 'customer' | 'admin';
+  role: 'customer' | 'manager' | 'admin' | 'superadmin';
   createdAt?: string;
   addresses?: {
     _id?: string;
@@ -33,6 +33,13 @@ export interface ProductSpecification {
   care?: string;
 }
 
+export interface StitchOption {
+  _id?: string;
+  type: string;
+  price: number;
+  description?: string;
+}
+
 export interface Product {
   id: string;
   _id?: string;
@@ -58,6 +65,23 @@ export interface Product {
   specifications?: ProductSpecification;
   sku?: string;
   createdAt?: string;
+
+  // Surat Ethnic Wear Fields
+  fabric?: string;
+  work?: string;
+  occasion?: string;
+  washCare?: string;
+  setContents?: string;
+  sareeLength?: string;
+  lehengaFlare?: string;
+  dispatchTime?: string;
+  videoUrl?: string;
+  stitchOptions?: StitchOption[];
+  deliveryInfo?: {
+    estimatedDays?: number;
+    isCodAvailable?: boolean;
+    freeShipping?: boolean;
+  };
 }
 
 export interface Category {
@@ -101,32 +125,77 @@ export interface Order {
   customerPhone?: string;
   items: OrderItem[];
   totalAmount: number;
-  discountAmount: number;
-  shippingFee: number;
-  status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Exchange Requested' | 'Exchange Approved' | 'Exchange Rejected';
-  paymentMethod: 'COD' | 'UPI' | 'Card';
+  discountAmount?: number;
+  discount?: number;
+  subtotal?: number;
+  shippingFee?: number;
+  shippingCharge?: number;
+  codCharge?: number;
+  couponCode?: string;
+  status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | string;
+  orderStatus?: string;
+  paymentMethod: 'COD' | 'UPI' | 'Card' | 'Online' | string;
+  paymentStatus?: 'pending' | 'paid' | 'failed' | string;
+  paymentId?: string;
   shippingAddress: {
     fullName?: string;
     street: string;
+    address?: string;
     city: string;
     state: string;
     pincode: string;
     phone?: string;
+    country?: string;
   };
+  trackingNumber?: string;
+  carrierName?: string;
+  trackingUrl?: string;
+  deliveredAt?: string;
+  exchangeStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+  exchangeReason?: string;
+  exchangeNotes?: string;
+  exchangeRequestedAt?: string;
+  exchangeResolvedAt?: string;
+  exchangeAdminNotes?: string;
 }
 
 export interface Coupon {
   id: string;
   _id?: string;
   code: string;
-  discountPercentage: number;
-  maxDiscountAmount: number;
-  minOrderAmount: number;
-  expiryDate: string;
-  isActive: boolean;
+  type?: 'percent' | 'flat';
+  discountType?: 'percentage' | 'fixed' | 'percent' | 'flat';
+  value?: number;
+  discountValue?: number;
+  discountPercentage?: number;
+  maxDiscount?: number;
+  maxDiscountAmount?: number;
+  maximumDiscount?: number;
+  minOrder?: number;
+  minOrderAmount?: number;
+  minimumOrderValue?: number;
+  expiry?: string;
+  expiryDate?: string;
+  usageLimit?: number;
+  usedCount?: number;
   usageCount?: number;
+  paymentMethod?: 'any' | 'prepaid' | 'cod';
+  isActive: boolean;
   createdAt?: string;
 }
+
+export interface ShippingZone {
+  _id?: string;
+  id?: string;
+  country: string;
+  countryCode?: string;
+  charge: number;
+  freeAbove: number;
+  estimatedDays?: string;
+  isActive?: boolean;
+  createdAt?: string;
+}
+
 
 export interface ContactMessage {
   id: string;
@@ -155,13 +224,39 @@ export interface Review {
 }
 
 export interface DashboardMetrics {
+  totalRevenue: number;
+  todayRevenue: number;
+  totalOrders: number;
+  todayOrders: number;
+  pendingOrders: number;
+  exchangeRequests: number;
+  pendingReviews: number;
   totalUsers: number;
   totalProducts: number;
-  totalOrders: number;
-  totalRevenue: number;
-  pendingOrders: number;
-  lowStockProducts: number;
+  lowStockCount: number;
+  lowStockProducts: {
+    _id: string;
+    name: string;
+    brand?: string;
+    category: string;
+    price: number;
+    stock: number;
+    sku?: string;
+    images?: string[];
+  }[];
+  totalSubscribers: number;
+  todaySubscribers: number;
   recentOrders: Order[];
+}
+
+export interface SubscriberItem {
+  _id?: string;
+  id?: string;
+  email: string;
+  status: 'active' | 'unsubscribed';
+  source?: string;
+  subscribedAt?: string;
+  createdAt?: string;
 }
 
 export interface InventoryItem {
@@ -280,19 +375,24 @@ export interface HomeSectionItem {
   id?: string;
   title: string;
   subtitle?: string;
-  type: 'story_circles' | 'product_grid' | 'banner_grid' | 'campaign_banner';
+  type: 'story_circles' | 'product_grid' | 'banner_grid' | 'campaign_banner' | 'bestselling_categories';
   order: number;
   isActive: boolean;
   config: {
     filterBy?: 'trending' | 'deal' | 'new' | 'category' | 'all';
     category?: string;
     limit?: number;
+    description?: string;
+    secondaryCtaText?: string;
+    secondaryCtaLink?: string;
     banners?: {
       image: string;
       title: string;
-      subtitle: string;
+      subtitle?: string;
       link: string;
-      badge: string;
+      badge?: string;
+      tag?: string;
+      description?: string;
     }[];
     ctaText?: string;
     ctaLink?: string;
@@ -300,4 +400,65 @@ export interface HomeSectionItem {
   };
   products?: any[];
   createdAt?: string;
+}
+
+export interface ReviewItem {
+  _id?: string;
+  id?: string;
+  user?: {
+    _id?: string;
+    name: string;
+    email?: string;
+    avatar?: string;
+  };
+  userName: string;
+  userAvatar?: string;
+  userLocation?: string;
+  product?: {
+    _id?: string;
+    name: string;
+    images?: string[];
+    price?: number;
+    category?: string;
+    slug?: string;
+  };
+  productName: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  images?: string[];
+  isVerifiedBuyer: boolean;
+  isVerifiedPurchase?: boolean;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  helpfulVotes?: number;
+  createdAt: string;
+}
+
+export interface BlogPostItem {
+  _id?: string;
+  id?: string;
+  title: string;
+  slug: string;
+  coverImage: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+  category: string;
+  author: {
+    name: string;
+    avatar?: string;
+    role?: string;
+  };
+  readTime: string;
+  views?: number;
+  isPublished: boolean;
+  publishedAt?: string;
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }

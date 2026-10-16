@@ -24,5 +24,10 @@ export const homeSectionService = {
 
   deleteHomeSection: async (id: string): Promise<void> => {
     await API.delete(`/home-sections/${id}`);
+  },
+
+  reorderHomeSections: async (orderings: { id: string; order: number }[]): Promise<HomeSectionItem[]> => {
+    const response = await API.put('/home-sections/reorder', { orderings });
+    return response.data.data;
   }
 };

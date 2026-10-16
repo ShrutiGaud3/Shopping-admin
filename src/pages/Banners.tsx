@@ -4,15 +4,11 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Check,
   X,
-  ExternalLink,
-  MoveUp,
-  MoveDown,
-  Sparkles,
-  Eye,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Smartphone,
+  Monitor
 } from 'lucide-react';
 import { bannerService } from '../services/bannerService';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +20,7 @@ export const Banners: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<BannerItem | null>(null);
   const [previewSlideIdx, setPreviewSlideIdx] = useState(0);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const { showToast } = useAuth();
 
   const [form, setForm] = useState({
@@ -63,7 +60,7 @@ export const Banners: React.FC = () => {
       subtitle: '',
       badge: '',
       desktopImage: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1920&q=80',
-      mobileImage: '',
+      mobileImage: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
       ctaText: 'Shop Collection',
       ctaLink: '/products',
       order: banners.length + 1,
@@ -139,21 +136,26 @@ export const Banners: React.FC = () => {
   };
 
   const currentPreviewBanner = banners[previewSlideIdx] || banners[0];
+  const activePreviewImage =
+    previewDevice === 'mobile' && currentPreviewBanner?.mobileImage
+      ? currentPreviewBanner.mobileImage
+      : currentPreviewBanner?.desktopImage;
 
   return (
     <div className="space-y-6">
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900 font-serif">Hero Banners Manager</h1>
+            <h1 className="text-xl font-bold text-slate-900 font-serif">
+              Hero Banners Manager
+            </h1>
             <span className="text-xs bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded-full border border-rose-200">
               {banners.length} Slides
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Manage high-resolution luxury hero slides, marketing badges, and CTA routes displayed on the customer storefront.
+            Configure dual images for each slide: <strong>Desktop Landscape</strong> (widescreen) and <strong>Mobile Portrait</strong> (phones/tablets).
           </p>
         </div>
 
@@ -165,26 +167,63 @@ export const Banners: React.FC = () => {
         </button>
       </div>
 
-      {/* Live Storefront Carousel Simulator */}
+      {/* Live Storefront Carousel Simulator with Desktop / Mobile Switcher */}
       {banners.length > 0 && currentPreviewBanner && (
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-rose-600" /> Live Storefront Carousel Simulator
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+            {/* Device Switcher */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                Preview Mode:
+              </span>
+              <div className="inline-flex items-center p-1 bg-slate-100 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                    previewDevice === 'desktop'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <Monitor className="w-3.5 h-3.5" />
+                  <span>Desktop (1920x800)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${
+                    previewDevice === 'mobile'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Mobile Device (800x1000)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Slide Navigation */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setPreviewSlideIdx((prev) => (prev === 0 ? banners.length - 1 : prev - 1))}
+                onClick={() =>
+                  setPreviewSlideIdx((prev) =>
+                    prev === 0 ? banners.length - 1 : prev - 1
+                  )
+                }
                 className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 cursor-pointer"
                 aria-label="Previous preview slide"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs text-slate-500 font-medium">
-                {previewSlideIdx + 1} / {banners.length}
+              <span className="text-xs text-slate-600 font-bold">
+                Slide {previewSlideIdx + 1} of {banners.length}
               </span>
               <button
-                onClick={() => setPreviewSlideIdx((prev) => (prev + 1) % banners.length)}
+                onClick={() =>
+                  setPreviewSlideIdx((prev) => (prev + 1) % banners.length)
+                }
                 className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 cursor-pointer"
                 aria-label="Next preview slide"
               >
@@ -193,43 +232,80 @@ export const Banners: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative rounded-xl overflow-hidden aspect-[21/9] sm:aspect-[21/8] bg-slate-900 flex items-center">
-            <img
-              src={currentPreviewBanner.desktopImage}
-              alt={currentPreviewBanner.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-75"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent"></div>
+          {/* Simulator Canvas */}
+          {previewDevice === 'desktop' ? (
+            /* Desktop Canvas */
+            <div className="relative rounded-xl overflow-hidden aspect-[21/8] bg-slate-900 flex items-center shadow-inner">
+              <img
+                src={activePreviewImage}
+                alt={currentPreviewBanner.title}
+                className="absolute inset-0 w-full h-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent"></div>
 
-            <div
-              className={`relative z-10 p-6 sm:p-12 max-w-xl ${
-                currentPreviewBanner.alignment === 'center'
-                  ? 'mx-auto text-center'
-                  : currentPreviewBanner.alignment === 'right'
-                  ? 'ml-auto text-right'
-                  : 'text-left'
-              }`}
-            >
-              {currentPreviewBanner.badge && (
-                <span className="inline-block bg-rose-600 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2 shadow-xs">
-                  {currentPreviewBanner.badge}
-                </span>
-              )}
-              <h2 className="text-xl sm:text-3xl md:text-4xl font-serif font-extrabold text-white tracking-wide uppercase leading-tight drop-shadow-md">
-                {currentPreviewBanner.title}
-              </h2>
-              {currentPreviewBanner.subtitle && (
-                <p className="text-xs sm:text-sm text-slate-200 mt-2 line-clamp-2 max-w-md">
-                  {currentPreviewBanner.subtitle}
-                </p>
-              )}
-              <div className="mt-4">
-                <span className="inline-block bg-white text-slate-900 font-bold text-xs px-5 py-2.5 rounded-full shadow-md">
-                  {currentPreviewBanner.ctaText || 'Shop Collection'} &rarr;
-                </span>
+              <div
+                className={`relative z-10 p-6 sm:p-12 max-w-xl ${
+                  currentPreviewBanner.alignment === 'center'
+                    ? 'mx-auto text-center'
+                    : currentPreviewBanner.alignment === 'right'
+                    ? 'ml-auto text-right'
+                    : 'text-left'
+                }`}
+              >
+                {currentPreviewBanner.badge && (
+                  <span className="inline-block bg-rose-600 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-2 shadow-xs">
+                    {currentPreviewBanner.badge}
+                  </span>
+                )}
+                <h2 className="text-xl sm:text-3xl md:text-4xl font-serif font-extrabold text-white tracking-wide uppercase leading-tight drop-shadow-md">
+                  {currentPreviewBanner.title}
+                </h2>
+                {currentPreviewBanner.subtitle && (
+                  <p className="text-xs sm:text-sm text-slate-200 mt-2 line-clamp-2 max-w-md">
+                    {currentPreviewBanner.subtitle}
+                  </p>
+                )}
+                <div className="mt-4">
+                  <span className="inline-block bg-white text-slate-900 font-bold text-xs px-5 py-2.5 rounded-full shadow-md">
+                    {currentPreviewBanner.ctaText || 'Shop Collection'} &rarr;
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            /* Mobile Device Frame Canvas */
+            <div className="py-4 flex justify-center bg-slate-100 rounded-xl">
+              <div className="relative rounded-3xl overflow-hidden aspect-[9/16] w-[270px] bg-slate-950 flex flex-col justify-end p-5 shadow-2xl border-4 border-slate-800">
+                <img
+                  src={activePreviewImage}
+                  alt={currentPreviewBanner.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
+
+                <div className="relative z-10 text-left text-white">
+                  {currentPreviewBanner.badge && (
+                    <span className="inline-block bg-rose-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2">
+                      {currentPreviewBanner.badge}
+                    </span>
+                  )}
+                  <h3 className="text-lg font-serif font-bold text-white uppercase leading-snug drop-shadow-md">
+                    {currentPreviewBanner.title}
+                  </h3>
+                  {currentPreviewBanner.subtitle && (
+                    <p className="text-[11px] text-slate-200 mt-1 line-clamp-2">
+                      {currentPreviewBanner.subtitle}
+                    </p>
+                  )}
+                  <div className="mt-3">
+                    <span className="inline-block bg-white text-slate-900 font-bold text-[10px] px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                      {currentPreviewBanner.ctaText || 'Shop Collection'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -248,29 +324,51 @@ export const Banners: React.FC = () => {
             </p>
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Add Slide
             </button>
           </div>
         ) : (
-          banners.map((banner, index) => (
+          banners.map((banner) => (
             <div
               key={banner._id || banner.id}
               className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden flex flex-col ${
-                banner.isActive ? 'border-slate-200 shadow-xs' : 'border-slate-200/60 opacity-60 bg-slate-50/50'
+                banner.isActive
+                  ? 'border-slate-200 shadow-xs'
+                  : 'border-slate-200/60 opacity-60 bg-slate-50/50'
               }`}
             >
-              {/* Image Preview Container */}
-              <div className="relative aspect-[16/9] bg-slate-900">
-                <img
-                  src={banner.desktopImage}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span className="bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    Order #{banner.order}
+              {/* Dual Image Preview Container (Desktop & Mobile Thumbnails) */}
+              <div className="relative bg-slate-900 p-2.5 flex gap-2">
+                {/* Desktop Thumbnail */}
+                <div className="relative flex-1 aspect-[16/9] rounded-lg overflow-hidden bg-slate-800 border border-white/10">
+                  <img
+                    src={banner.desktopImage}
+                    alt={`${banner.title} Desktop`}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute bottom-1 left-1 bg-black/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                    <Monitor className="w-2.5 h-2.5" /> Desktop
+                  </span>
+                </div>
+
+                {/* Mobile Thumbnail */}
+                <div className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden bg-slate-800 border border-white/10 shrink-0">
+                  <img
+                    src={banner.mobileImage || banner.desktopImage}
+                    alt={`${banner.title} Mobile`}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute bottom-1 left-1 bg-black/80 text-white text-[8px] font-bold px-1 py-0.5 rounded flex items-center gap-0.5">
+                    <Smartphone className="w-2.5 h-2.5 text-rose-400" />
+                  </span>
+                </div>
+
+                {/* Status Badges Overlay */}
+                <div className="absolute top-4 left-4 flex items-center gap-1.5">
+                  <span className="bg-slate-900/90 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    #{banner.order}
                   </span>
                   {banner.badge && (
                     <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
@@ -279,7 +377,7 @@ export const Banners: React.FC = () => {
                   )}
                 </div>
 
-                <div className="absolute top-2.5 right-2.5">
+                <div className="absolute top-4 right-4">
                   <button
                     onClick={() => handleToggleActive(banner)}
                     className={`text-[10px] font-bold px-2.5 py-1 rounded-full cursor-pointer transition shadow-xs ${
@@ -296,16 +394,21 @@ export const Banners: React.FC = () => {
               {/* Banner Details */}
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm truncate" title={banner.title}>
+                  <h3
+                    className="font-bold text-slate-900 text-sm truncate"
+                    title={banner.title}
+                  >
                     {banner.title}
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                     {banner.subtitle || 'No subtitle specified'}
                   </p>
-                  
+
                   <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
                     <span className="font-semibold text-slate-800">CTA:</span>
-                    <span className="truncate">{banner.ctaText} &rarr; {banner.ctaLink}</span>
+                    <span className="truncate">
+                      {banner.ctaText} &rarr; {banner.ctaLink}
+                    </span>
                   </div>
                 </div>
 
@@ -338,7 +441,7 @@ export const Banners: React.FC = () => {
         )}
       </div>
 
-      {/* Add / Edit Banner Modal */}
+      {/* Add / Edit Banner Modal with Dual Image Configuration */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
@@ -348,7 +451,7 @@ export const Banners: React.FC = () => {
               </h2>
               <button
                 onClick={() => setModalOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-700"
+                className="p-1 rounded-full text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -403,29 +506,36 @@ export const Banners: React.FC = () => {
                   <input
                     type="number"
                     value={form.order}
-                    onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setForm({ ...form, order: parseInt(e.target.value) || 0 })
+                    }
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-slate-900"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Desktop Banner Image URL * (Landscape: ~1920x800)
-                </label>
+              {/* 1. Desktop Banner Image URL */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <Monitor className="w-4 h-4 text-blue-600" />
+                    <span>Desktop Screen Banner Image URL * (1920x800 Landscape)</span>
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-medium">For PC &amp; Laptops</span>
+                </div>
                 <input
                   type="url"
                   required
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://images.unsplash.com/... (wide landscape)"
                   value={form.desktopImage}
                   onChange={(e) => setForm({ ...form, desktopImage: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:border-slate-900"
                 />
                 {form.desktopImage && (
-                  <div className="mt-2 rounded-lg overflow-hidden border border-slate-200 aspect-[21/9] bg-slate-100 max-h-36">
+                  <div className="mt-1.5 rounded-lg overflow-hidden border border-slate-200 aspect-[21/8] bg-slate-100 max-h-28">
                     <img
                       src={form.desktopImage}
-                      alt="Preview"
+                      alt="Desktop Preview"
                       className="w-full h-full object-cover"
                       onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
                     />
@@ -433,17 +543,36 @@ export const Banners: React.FC = () => {
                 )}
               </div>
 
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Mobile Banner Image URL (Optional portrait/square)
-                </label>
+              {/* 2. Mobile Device Banner Image URL */}
+              <div className="p-3.5 bg-rose-50/50 rounded-xl border border-rose-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-rose-950 flex items-center gap-1.5">
+                    <Smartphone className="w-4 h-4 text-rose-600" />
+                    <span>Mobile Device Banner Image URL (800x1000 Portrait)</span>
+                  </label>
+                  <span className="text-[10px] text-rose-700 font-medium">For Phones &amp; Tablets</span>
+                </div>
                 <input
                   type="url"
-                  placeholder="https://images.unsplash.com/... (optional)"
+                  placeholder="https://images.unsplash.com/... (vertical portrait)"
                   value={form.mobileImage}
                   onChange={(e) => setForm({ ...form, mobileImage: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:border-slate-900"
                 />
+                {form.mobileImage ? (
+                  <div className="mt-1.5 rounded-lg overflow-hidden border border-rose-200 aspect-[3/4] w-24 bg-slate-100">
+                    <img
+                      src={form.mobileImage}
+                      alt="Mobile Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-500 italic">
+                    If left blank, desktop image will be scaled on mobile.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -479,7 +608,9 @@ export const Banners: React.FC = () => {
                   </label>
                   <select
                     value={form.alignment}
-                    onChange={(e) => setForm({ ...form, alignment: e.target.value as any })}
+                    onChange={(e) =>
+                      setForm({ ...form, alignment: e.target.value as any })
+                    }
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-slate-900"
                   >
                     <option value="left">Left Aligned</option>
@@ -494,7 +625,9 @@ export const Banners: React.FC = () => {
                   </label>
                   <select
                     value={form.isActive ? 'active' : 'inactive'}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.value === 'active' })}
+                    onChange={(e) =>
+                      setForm({ ...form, isActive: e.target.value === 'active' })
+                    }
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-slate-900"
                   >
                     <option value="active">Active (Visible on Storefront)</option>
@@ -507,13 +640,13 @@ export const Banners: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50"
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800"
+                  className="px-5 py-2 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 cursor-pointer transition shadow-xs"
                 >
                   {editingBanner ? 'Save Changes' : 'Create Hero Slide'}
                 </button>
@@ -522,7 +655,6 @@ export const Banners: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

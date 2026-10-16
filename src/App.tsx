@@ -20,6 +20,9 @@ import { Settings } from './pages/Settings';
 import { Banners } from './pages/Banners';
 import { HomeSections } from './pages/HomeSections';
 import { TrustBadges } from './pages/TrustBadges';
+import { ShippingZones } from './pages/ShippingZones';
+import { Blogs } from './pages/Blogs';
+import { Subscribers } from './pages/Subscribers';
 
 export function App() {
   return (
@@ -46,7 +49,11 @@ export function App() {
               <Route path="/users" element={<Users />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/reviews" element={<Reviews />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/subscribers" element={<Subscribers />} />
+              <Route path="/shipping-zones" element={<ShippingZones />} />
               <Route path="/settings" element={<Settings />} />
+
             </Route>
           </Route>
 
