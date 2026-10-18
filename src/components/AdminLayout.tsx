@@ -120,15 +120,17 @@ export const AdminLayout: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2.5">
-            <img
-              src="/logo.png"
-              alt="Weavera Logo"
-              className="w-9 h-9 rounded-xl object-contain shadow-xs border border-slate-200"
-            />
+            <div className="p-1 rounded-xl bg-[#BEDAA9]/35 border border-[#BEDAA9] shadow-xs flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="Weavera Logo"
+                className="w-8 h-8 rounded-lg object-contain"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-wider text-slate-900 text-lg font-serif">WEAVERA</span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="font-extrabold tracking-wider text-[#183812] text-lg font-serif">WEAVERA</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-[#BEDAA9]/40 text-[#183812] border border-[#BEDAA9]">
                   Portal
                 </span>
               </div>

@@ -47,11 +47,11 @@ export const Login: React.FC = () => {
         
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-xl shadow-slate-300/40 mb-4 border border-slate-200 overflow-hidden p-1.5">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#BEDAA9]/35 shadow-xl shadow-slate-300/40 mb-4 border border-[#BEDAA9] overflow-hidden p-1.5">
             <img src="/logo.png" alt="Weavera Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold font-serif tracking-wider text-slate-900">
-            WEAVERA <span className="font-sans text-xs font-bold uppercase text-emerald-700 tracking-widest ml-1 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">Admin Portal</span>
+          <h1 className="text-2xl font-bold font-serif tracking-wider text-[#183812]">
+            WEAVERA <span className="font-sans text-xs font-bold uppercase text-[#183812] tracking-widest ml-1 bg-[#BEDAA9]/40 px-2 py-0.5 rounded-full border border-[#BEDAA9]">Admin Portal</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">Authorized Executive Access Only</p>
         </div>
