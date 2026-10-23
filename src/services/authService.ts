@@ -4,7 +4,7 @@ import type { User } from '../types';
 export const authService = {
   // Login specifically for Admin
   login: async (email: string, password: string): Promise<{ success: boolean; token: string; user: User; message?: string }> => {
-    const response = await API.post('/auth/login', { email, password });
+    const response = await API.post('/auth/login', { email, password, portal: 'admin' });
     return response.data;
   },
 
